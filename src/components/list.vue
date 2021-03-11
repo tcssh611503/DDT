@@ -102,8 +102,6 @@ export default {
         .then((response) => {
           try {
             let rawData = response.data.orders;
-            console.log("999", rawData);
-
             for (let i = 0; i < rawData.length; i++) {
               rawData[i].sorTimestamp = this.sortTimestamp(rawData[i].date);
               rawData[i].date = this.formatTime(rawData[i].date);
