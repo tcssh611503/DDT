@@ -6,7 +6,7 @@
           <div class="i"></div>
           <h1 class="title">進行中</h1>
         </div>
-        <div class="card" v-for="(item, index) in filter1" :key="index">
+        <div class="card" v-for="(item, index) in filterProgress" :key="index">
           <div class="card-left">
             <div class="img">
               <img :src="item.logo" alt="" />
@@ -39,7 +39,7 @@
             <h1 class="title">已完成</h1>
           </div>
         </div>
-        <div class="card" v-for="(item, index) in filter2" :key="index">
+        <div class="card" v-for="(item, index) in filterFinish" :key="index">
           <div class="card-left">
             <div class="img">
               <img :src="item.logo" alt="" />
@@ -74,21 +74,19 @@ export default {
       orders: [],
     };
   },
-  created() {
-
-  },
+  created() {},
   mounted() {
     this.getData();
   },
   computed: {
-    filter1: function () {
+    filterProgress: function () {
       return this.orders
         .filter((item) => item.status.code == 1 || item.status.code == 2)
         .sort(function (a, b) {
           return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
         });
     },
-    filter2: function () {
+    filterFinish: function () {
       return this.orders
         .filter((item) => item.status.code == 3 || item.status.code == 4)
         .sort(function (a, b) {
@@ -98,54 +96,26 @@ export default {
   },
   methods: {
     getData() {
-      let rawData = [
-        {
-          name: "Livi優活 抽取式衛生紙(100抽x10包x10串/箱)",
-          logo: "https://static.oopocket.com/store/iconTreemall@3x.png",
-          status: {
-            code: 3,
-            type: "已取消",
-          },
-          date: "107/6/12",
-        },
-        {
-          name: "BALMUDA The Toaster 百慕達烤麵包機-黑色",
-          logo: "https://static.oopocket.com/store/iconTreemall@3x.png",
-          status: {
-            code: 2,
-            type: "已成立",
-          },
-          date: "108/7/21",
-        },
-        {
-          name: "贈-短慧萬用鍋HD2133+三合一濾網「LG樂金」韓國原裝...",
-          logo: "https://static.oopocket.com/store/iconTreemall@3x.png",
-          status: {
-            code: 1,
-            type: "處理中",
-          },
-          date: "108/6/2",
-        },
-        {
-          name: "Apple AirPds 2",
-          logo: "https://static.oopocket.com/store/iconTreemall@3x.png",
-          status: {
-            code: 4,
-            type: "已送達",
-          },
-          date: "108/3/02",
-        },
-      ];
+      let _vm = this;
+      this.$http
+        .get("https://www.hsuanyi.org/workapi/ddtJson.json")
+        .then((response) => {
+          try {
+            let rawData = response.data.orders;
+            console.log("999", rawData);
 
-      for (let i = 0; i < rawData.length; i++) {
-        rawData[i].sorTimestamp = this.sortTimestamp(rawData[i].date);
-        rawData[i].date = this.formatTime(rawData[i].date);
-      }
-  
-      this.orders.push(...rawData);
+            for (let i = 0; i < rawData.length; i++) {
+              rawData[i].sorTimestamp = this.sortTimestamp(rawData[i].date);
+              rawData[i].date = this.formatTime(rawData[i].date);
+            }
+            _vm.orders.push(...rawData);
+          } catch (error) {
+            console.log(error);
+          }
+        });
     },
     formatTime(date) {
-      let re = new Date(date.replace(/\//g,'-'));
+      let re = new Date(date.replace(/\//g, "-"));
       const year = re.getFullYear();
       const month = re.getMonth() + 1;
       const day = re.getDate();
@@ -157,7 +127,7 @@ export default {
       return formatTime;
     },
     sortTimestamp(date) {
-      let timestamp = new Date(date.replace(/\//g,'-'));
+      let timestamp = new Date(date.replace(/\//g, "-"));
       return timestamp.getTime();
     },
   },
