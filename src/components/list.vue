@@ -1,39 +1,66 @@
 <template>
   <div class="box">
-    <div class="progress-part">
-      <div class="part-title">
-        <div class="i"></div>
-        <h1 class="title">進行中</h1>
-      </div>
-      <div class="card">
-        <div class="card-left">
-          <div class="img">
-            <img
-              src="https://static.oopocket.com/store/iconTreemall@3x.png"
-              alt=""
-            />
-          </div>
+    <div class="list">
+      <div class="progress-part">
+        <div class="part-title">
+          <div class="i"></div>
+          <h1 class="title">進行中</h1>
         </div>
-        <div class="card-right">
-          <div class="right-top">
-            <div class="type"><p>已送達</p></div>
-            <div class="date"><p>預計出貨:108/3/02</p></div>
-          </div>
-          <div class="right-bottom">
-            <div class="name">
-              <p>Livi優活 抽取式衛生紙(100抽x10包x10串/箱)</p>
+        <div class="card" v-for="(item, index) in filter1" :key="index">
+          <div class="card-left">
+            <div class="img">
+              <img :src="item.logo" alt="" />
             </div>
           </div>
-        </div>
-        <div class="card-icon">
-          <div class="arrow"><span>></span></div>
+          <div class="card-right">
+            <div class="right-top">
+              <div class="type">
+                <p>{{ item.status.type }}</p>
+              </div>
+              <div class="date">
+                <p>預計出貨:{{ item.date }}</p>
+              </div>
+            </div>
+            <div class="right-bottom">
+              <div class="name">
+                <p>{{ item.name }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-icon">
+            <div class="arrow"><span>></span></div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="progress-part">
-      <div class="part-title">
-        <div class="i"></div>
-        <h1 class="title">已完成</h1>
+      <div class="list">
+        <div class="progress-part">
+          <div class="part-title">
+            <div class="i"></div>
+            <h1 class="title">已完成</h1>
+          </div>
+        </div>
+        <div class="card" v-for="(item, index) in filter2" :key="index">
+          <div class="card-left">
+            <div class="img">
+              <img :src="item.logo" alt="" />
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top">
+              <div class="type">
+                <p>{{ item.status.type }}</p>
+              </div>
+            </div>
+            <div class="right-bottom">
+              <div class="name">
+                <p>{{ item.name }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-icon">
+            <div class="arrow"><span>></span></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -44,7 +71,34 @@ export default {
   name: "HelloWorld",
   data() {
     return {
-      orders: [
+      orders: [],
+    };
+  },
+  created() {
+
+  },
+  mounted() {
+    this.getData();
+  },
+  computed: {
+    filter1: function () {
+      return this.orders
+        .filter((item) => item.status.code == 1 || item.status.code == 2)
+        .sort(function (a, b) {
+          return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
+        });
+    },
+    filter2: function () {
+      return this.orders
+        .filter((item) => item.status.code == 3 || item.status.code == 4)
+        .sort(function (a, b) {
+          return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
+        });
+    },
+  },
+  methods: {
+    getData() {
+      let rawData = [
         {
           name: "Livi優活 抽取式衛生紙(100抽x10包x10串/箱)",
           logo: "https://static.oopocket.com/store/iconTreemall@3x.png",
@@ -81,17 +135,34 @@ export default {
           },
           date: "108/3/02",
         },
-      ],
-    };
-  },
+      ];
 
-  props: {
-    msg: String,
+      for (let i = 0; i < rawData.length; i++) {
+        rawData[i].sorTimestamp = this.sortTimestamp(rawData[i].date);
+        rawData[i].date = this.formatTime(rawData[i].date);
+      }
+  
+      this.orders.push(...rawData);
+    },
+    formatTime(date) {
+      let re = new Date(date.replace(/\//g,'-'));
+      const year = re.getFullYear();
+      const month = re.getMonth() + 1;
+      const day = re.getDate();
+
+      // 轉成字串，如果低於10，前面加上'0'
+      const monthString = month < 10 ? "0" + month : "" + month;
+      const dayString = day < 10 ? "0" + day : "" + day;
+      let formatTime = `${year}/${monthString}/${dayString}`;
+      return formatTime;
+    },
+    sortTimestamp(date) {
+      let timestamp = new Date(date.replace(/\//g,'-'));
+      return timestamp.getTime();
+    },
   },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 * {
   margin: 0;
@@ -99,18 +170,24 @@ export default {
 }
 
 html {
- /* 設定font-size用 1rem=10px */
-font-size: 10px;
-
+  /* 設定font-size用 1rem=10px */
+  font-size: 10px;
 }
 
 .box {
   background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.list {
+  width: 100%;
 }
 
 .progress-part {
   width: 100%;
-  height: 200px;
   margin-left: auto;
   margin-right: auto;
   border: 1px solid #fff;
@@ -120,8 +197,8 @@ font-size: 10px;
   height: 1.5rem;
   width: 100%;
   background-color: #a9acb8;
-  /* border: 2px ridge #ffffff; */
   font-size: 0.1rem;
+  position: relative;
 }
 
 .i {
@@ -130,17 +207,14 @@ font-size: 10px;
   margin-left: 0.8rem;
   margin-top: 0.1rem;
   border-left: solid 0.25rem #219315;
-  /* display: inline-block; */
   position: absolute;
 }
 
 .title {
-  /* display: inline-block; */
   height: 1.2rem;
   margin-left: 1.4rem;
   margin-top: 0.1rem;
   text-align: left;
-  /* border-left: 0.5rem ridge #219315; */
   position: absolute;
 }
 
@@ -157,7 +231,6 @@ font-size: 10px;
 .card-left {
   width: 20%;
   height: 100%;
-  /* position: relative; */
 }
 
 .img {
@@ -188,23 +261,21 @@ img {
   align-items: flex-start;
 }
 
-.type{
+.type {
   width: 20%;
-  color: #46B035;
+  color: #46b035;
   font-weight: 400;
-    display: flex;
+  display: flex;
   justify-content: flex-start;
   align-items: flex-start;
 }
 
-.date{
-   width: 80%;
-     display: flex;
+.date {
+  width: 80%;
+  display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-
 }
-
 
 .right-bottom {
   width: 100%;
@@ -212,6 +283,10 @@ img {
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
+}
+
+.name {
+  text-align: left;
 }
 
 .card-icon {
@@ -222,9 +297,6 @@ img {
 .arrow {
   width: 100%;
   height: 100%;
-  /* padding: 1rem; */
-
-  /* background-color: #e60012; */
 }
 
 .arrow span {
