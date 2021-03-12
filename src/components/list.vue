@@ -1,6 +1,13 @@
 <template>
   <div class="box">
-    <div class="list">
+      <div class="hello">
+    <!-- <p>{{count}}</p>
+    <button @click="increase">Click Me</button> -->
+      <p>{{showData[0].name}}</p>
+  </div>
+
+  <!-- Way1 Vuex -->
+  <div class="list">
       <div class="progress-part">
         <div class="part-title">
           <div class="i"></div>
@@ -64,6 +71,75 @@
       </div>
     </div>
   </div>
+
+  <!-- Way2  methods: getData()  -->
+  <!-- <div class="list">
+      <div class="progress-part">
+        <div class="part-title">
+          <div class="i"></div>
+          <h1 class="title">進行中</h1>
+        </div>
+        <div class="card" v-for="(item, index) in filterProgress" :key="index">
+          <div class="card-left">
+            <div class="img">
+              <img :src="item.logo" alt="" />
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top">
+              <div class="type">
+                <p>{{ item.status.type }}</p>
+              </div>
+              <div class="date">
+                <p>預計出貨:{{ item.date }}</p>
+              </div>
+            </div>
+            <div class="right-bottom">
+              <div class="name">
+                <p>{{ item.name }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-icon">
+            <div class="arrow"><span>></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="list">
+        <div class="progress-part">
+          <div class="part-title">
+            <div class="i"></div>
+            <h1 class="title">已完成</h1>
+          </div>
+        </div>
+        <div class="card" v-for="(item, index) in filterFinish" :key="index">
+          <div class="card-left">
+            <div class="img">
+              <img :src="item.logo" alt="" />
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top">
+              <div class="type">
+                <p>{{ item.status.type }}</p>
+              </div>
+            </div>
+            <div class="right-bottom">
+              <div class="name">
+                <p>{{ item.name }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-icon">
+            <div class="arrow"><span>></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
+
+
 </template>
 
 <script>
@@ -72,13 +148,43 @@ export default {
   data() {
     return {
       orders: [],
+      counting: 10
     };
   },
   created() {},
   mounted() {
     this.getData();
+    // 1.  頁面讀取完成時，吃 randomuser API
+    this.$store.dispatch("GetUser");
   },
-  computed: {
+  computed: { 
+    //way1
+    // 2. 將 state 中的 Loaded 用 computed 抓出來給 userLoaded 做使用
+    userLoaded() {
+      return this.$store.state.loadedData;
+    },
+    count() {
+      return this.$store.state.count;
+    },
+    showData() {
+      return this.$store.state.ordersVuex;
+    },
+    filterProgressVuex: function () {
+      return this.showData
+        .filter((item) => item.status.code == 1 || item.status.code == 2)
+        .sort(function (a, b) {
+          return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
+        });
+    },
+    filterFinishVuex: function () {
+      return this.showData
+        .filter((item) => item.status.code == 3 || item.status.code == 4)
+        .sort(function (a, b) {
+          return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
+        });
+    },
+
+    //way2
     filterProgress: function () {
       return this.orders
         .filter((item) => item.status.code == 1 || item.status.code == 2)
@@ -95,6 +201,11 @@ export default {
     },
   },
   methods: {
+    // 3. Reload 按鈕按下去的時候，把 state 的 Loaded 改回 false，然後再執行一次 GetUser 這個 actions
+    Reload() {
+      this.$store.commit("SetFalse");
+      this.$store.dispatch("GetUser");
+    },
     getData() {
       let _vm = this;
       this.$http
@@ -106,7 +217,10 @@ export default {
               rawData[i].sorTimestamp = this.sortTimestamp(rawData[i].date);
               rawData[i].date = this.formatTime(rawData[i].date);
             }
+
+            // this.$store.dispatch('incrementCount', ...rawData);
             _vm.orders.push(...rawData);
+
           } catch (error) {
             console.log(error);
           }
@@ -128,6 +242,9 @@ export default {
       let timestamp = new Date(date.replace(/\//g, "-"));
       return timestamp.getTime();
     },
+    increase() {
+      this.$store.dispatch('incrementCount', this.counting)
+    }
   },
 };
 </script>
