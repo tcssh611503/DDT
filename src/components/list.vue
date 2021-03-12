@@ -1,11 +1,5 @@
 <template>
   <div class="box">
-      <div class="hello">
-    <!-- <p>{{count}}</p>
-    <button @click="increase">Click Me</button> -->
-      <p>{{showData[0].name}}</p>
-  </div>
-
   <!-- Way1 Vuex -->
   <div class="list">
       <div class="progress-part">
@@ -13,7 +7,7 @@
           <div class="i"></div>
           <h1 class="title">進行中</h1>
         </div>
-        <div class="card" v-for="(item, index) in filterProgress" :key="index">
+        <div class="card" v-for="(item, index) in filterProgressVuex" :key="index">
           <div class="card-left">
             <div class="img">
               <img :src="item.logo" alt="" />
@@ -46,7 +40,7 @@
             <h1 class="title">已完成</h1>
           </div>
         </div>
-        <div class="card" v-for="(item, index) in filterFinish" :key="index">
+        <div class="card" v-for="(item, index) in filterFinishVuex" :key="index">
           <div class="card-left">
             <div class="img">
               <img :src="item.logo" alt="" />
@@ -71,7 +65,6 @@
       </div>
     </div>
   </div>
-
   <!-- Way2  methods: getData()  -->
   <!-- <div class="list">
       <div class="progress-part">
@@ -137,9 +130,6 @@
       </div>
     </div>
   </div> -->
-
-
-
 </template>
 
 <script>
@@ -148,23 +138,19 @@ export default {
   data() {
     return {
       orders: [],
-      counting: 10
     };
   },
   created() {},
   mounted() {
-    this.getData();
-    // 1.  頁面讀取完成時，吃 randomuser API
-    this.$store.dispatch("GetUser");
+    // Way1 1. 頁面讀取完成時，dispatch API
+    this.$store.dispatch("getVuexData");
+    // Way2  methods: getData() 
+    // this.getData();
   },
   computed: { 
-    //way1
-    // 2. 將 state 中的 Loaded 用 computed 抓出來給 userLoaded 做使用
+    //way1 2. 將 Vuex state 中的資料抓出來使用
     userLoaded() {
       return this.$store.state.loadedData;
-    },
-    count() {
-      return this.$store.state.count;
     },
     showData() {
       return this.$store.state.ordersVuex;
@@ -183,68 +169,60 @@ export default {
           return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
         });
     },
-
-    //way2
-    filterProgress: function () {
-      return this.orders
-        .filter((item) => item.status.code == 1 || item.status.code == 2)
-        .sort(function (a, b) {
-          return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
-        });
-    },
-    filterFinish: function () {
-      return this.orders
-        .filter((item) => item.status.code == 3 || item.status.code == 4)
-        .sort(function (a, b) {
-          return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
-        });
-    },
+    //way2 methods: getData() 
+    // filterProgress: function () {
+    //   return this.orders
+    //     .filter((item) => item.status.code == 1 || item.status.code == 2)
+    //     .sort(function (a, b) {
+    //       return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
+    //     });
+    // },
+    // filterFinish: function () {
+    //   return this.orders
+    //     .filter((item) => item.status.code == 3 || item.status.code == 4)
+    //     .sort(function (a, b) {
+    //       return a.sorTimestamp < b.sorTimestamp ? 1 : -1;
+    //     });
+    // },
   },
   methods: {
-    // 3. Reload 按鈕按下去的時候，把 state 的 Loaded 改回 false，然後再執行一次 GetUser 這個 actions
-    Reload() {
-      this.$store.commit("SetFalse");
-      this.$store.dispatch("GetUser");
-    },
-    getData() {
-      let _vm = this;
-      this.$http
-        .get("https://www.hsuanyi.org/workapi/ddtJson.json")
-        .then((response) => {
-          try {
-            let rawData = response.data.orders;
-            for (let i = 0; i < rawData.length; i++) {
-              rawData[i].sorTimestamp = this.sortTimestamp(rawData[i].date);
-              rawData[i].date = this.formatTime(rawData[i].date);
-            }
+    // Way2  methods: getData() 
+    // getData() {
+    //   let _vm = this;
+    //   this.$http
+    //     .get("https://www.hsuanyi.org/workapi/ddtJson.json")
+    //     .then((response) => {
+    //       try {
+    //         let rawData = response.data.orders;
+    //         for (let i = 0; i < rawData.length; i++) {
+    //           rawData[i].sorTimestamp = this.sortTimestamp(rawData[i].date);
+    //           rawData[i].date = this.formatTime(rawData[i].date);
+    //         }
 
-            // this.$store.dispatch('incrementCount', ...rawData);
-            _vm.orders.push(...rawData);
+    //         // this.$store.dispatch('incrementCount', ...rawData);
+    //         _vm.orders.push(...rawData);
 
-          } catch (error) {
-            console.log(error);
-          }
-        });
-    },
-    formatTime(date) {
-      let re = new Date(date.replace(/\//g, "-"));
-      const year = re.getFullYear();
-      const month = re.getMonth() + 1;
-      const day = re.getDate();
+    //       } catch (error) {
+    //         console.log(error);
+    //       }
+    //     });
+    // },
+    // formatTime(date) {
+    //   let re = new Date(date.replace(/\//g, "-"));
+    //   const year = re.getFullYear();
+    //   const month = re.getMonth() + 1;
+    //   const day = re.getDate();
 
-      // 轉成字串，如果低於10，前面加上'0'
-      const monthString = month < 10 ? "0" + month : "" + month;
-      const dayString = day < 10 ? "0" + day : "" + day;
-      let formatTime = `${year}/${monthString}/${dayString}`;
-      return formatTime;
-    },
-    sortTimestamp(date) {
-      let timestamp = new Date(date.replace(/\//g, "-"));
-      return timestamp.getTime();
-    },
-    increase() {
-      this.$store.dispatch('incrementCount', this.counting)
-    }
+    //   // 轉成字串，如果低於10，前面加上'0'
+    //   const monthString = month < 10 ? "0" + month : "" + month;
+    //   const dayString = day < 10 ? "0" + day : "" + day;
+    //   let formatTime = `${year}/${monthString}/${dayString}`;
+    //   return formatTime;
+    // },
+    // sortTimestamp(date) {
+    //   let timestamp = new Date(date.replace(/\//g, "-"));
+    //   return timestamp.getTime();
+    // },
   },
 };
 </script>
