@@ -1,4 +1,16 @@
-# ddt
+# ＤＤＴ F2E 實作專案
+
+### F2E 實作題目：https://www.notion.so/F2E-518e57fb202d46588cb39b2d56d624ba
+### 成品：https://tcssh611503.github.io/DDT/
+
+
+專案安裝步驟如下:
+
+## Git Clone
+
+```
+git clone git@github.com:tcssh611503/DDT.git
+```
 
 ## Project setup
 ```
