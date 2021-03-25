@@ -3,6 +3,8 @@
 ### F2E 實作題目：https://www.notion.so/F2E-518e57fb202d46588cb39b2d56d624ba
 ### 成品：https://tcssh611503.github.io/DDT/
 
+![](https://i.imgur.com/6t2S3rt.png)
+
 
 專案安裝步驟如下:
 
